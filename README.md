@@ -4,7 +4,11 @@
 
 This tool allows [Cytoscape](https://cytoscape.org) networks and bring them into Virtual Reality (VR). As the source networks are generally 2D, the tool allows the network to projected in various ways onto 3D shapes, e.g., a hemisphere. The resulting VR version of the network comes in the form of a web page (HTML) and a polygon file (PLY), and it can be viewed in any modern web browser. As it it is based on the WebXR standard, the VR functionality should work on any VR headset.
 
-It has been tested only on the Oculus/Meta Quest 2 headset where the framerate is acceptable for networks up to around 20k nodes+edges. It has limited interactivity, allowing the user to select nodes to show their names. This can be done either with the controllers by grabbing the node or with handtracking by pinching the nodes.
+It has been tested only on the Oculus/Meta Quest 2 headset where the frame rate is acceptable for networks up to around 20k nodes+edges. It has limited interactivity, allowing the user to select nodes to show their names. This can be done either with the controllers by grabbing the node or with hand tracking by pinching the nodes.
+
+Examples of how the result can look:
+- [Co-expression network created with FAVA](https://download.jensenlab.org/vr/fava_light.html)
+- [STRING network colored with U-CIE](https://download.jensenlab.org/vr/u-cie_dark.html)
 
 ## How to use
 
