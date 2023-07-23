@@ -102,7 +102,7 @@ def scale_network_rectangle(network, aspect):
 			scale = d
 	for node in network['nodes']:
 		node['x'] = node['x']/scale
-		node['y'] = node['y']/scale 
+		node['y'] = node['y']/scale
 
 def project_network_hemisphere(network, radius):
 	for node in network['nodes']:
@@ -113,7 +113,7 @@ def project_network_hemisphere(network, radius):
 		r = radius-z
 		node['x'] = r*2.0*x/(h+1.0)
 		node['y'] = r*(1.0-h)/(h+1.0)
-		node['z'] = -r*2.0*y/(h+1.0) 
+		node['z'] = -r*2.0*y/(h+1.0)
 
 def project_network_floor(network, radius):
 	for node in network['nodes']:
@@ -254,6 +254,34 @@ def write_ply(prefix, network, dark):
 	finally:
 		f.close()
 
+def write_datadivr(prefix, network):
+	f = open(prefix+'.json', 'w')
+	try:
+		f.write('{\n"directed": false,\n"multigraph": false,\n"graph": {"name": "Cy2VR"},\n"nodes": [\n')
+		nodedata = []
+		for id, node in enumerate(network['nodes']):
+			color = '#FFFFFF'
+			if 'color' in node:
+				color = node['color']
+			name = ""
+			if 'name' in node:
+				name = node['name']
+			if name == "":
+				name = "-"
+			nodedata.append('{"id": %d, "pos": [%f,%f,%f], "nodecolor": "%s", "annotation": ["%s"]}' % (id, node['x']/5.0+0.5, node['y']/5.0+0.5, node['z']/5.0+0.5, color, name))
+		f.write(','.join(nodedata))
+		f.write('\n],\n"links": [\n')
+		edgedata = []
+		for edge in network['edges']:
+			color = '#FFFFFF'
+			if 'color' in edge:
+				color = edge['color']
+			edgedata.append('{"source": %d, "target": %d, "linkcolor": "%s"}' % (edge['source'], edge['target'], color))
+		f.write(','.join(edgedata))
+	finally:
+		f.write('\n]\n}\n')
+		f.close()
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Convert Cytoscape XGMML file to VR visualization.')
 	parser.add_argument('--ar', dest='ar', action='store_true', help='optimize for AR (default is VR).')
@@ -262,6 +290,7 @@ if __name__ == '__main__':
 	parser.add_argument('--geometry', dest='geometry', default='hemisphere', help='geometry network projection (default is "hemisphere")')
 	parser.add_argument('--names', dest='names', default='name', help='column to use for node names (default is "name")')
 	parser.add_argument('--nodesize', dest='nodesize', default=0.02, help='size of nodes (default is 0.02)')
+	parser.add_argument('--outformat', dest='outformat', default='html', help='output format (default is "html")')
 	parser.add_argument('--prefix', dest='prefix', default='vr', help='prefix for output files (default is "vr")')
 	parser.add_argument('--radius', dest='radius', default=2.2, type=float, help='radius of hemisphere (default is 2.5)')
 	parser.add_argument('--scale', dest='scale', default=1.0, type=float, help='scale down network (default is 1.0)')
@@ -271,14 +300,17 @@ if __name__ == '__main__':
 	network = read_xgmml(args.file, args.names)
 	center_network(network)
 	create_network_depth(network, args.depth)
-	if args.geometry == 'hemisphere':
+	if args.geometry.lower() == 'hemisphere':
 		scale_network_circle(network, args.scale)
 		project_network_hemisphere(network, args.radius)
-	elif args.geometry == 'floor':
+	elif args.geometry.lower() == 'floor':
 		scale_network_circle(network, args.scale)
 		project_network_floor(network, args.radius)
-	elif args.geometry == 'wall':
+	elif args.geometry.lower() == 'wall':
 		scale_network_rectangle(network, math.pi*args.radius)
 		project_network_wall(network, args.radius)
-	write_html(args.prefix, network, args.ar, args.dark, args.nodesize, args.radius)
-	write_ply(args.prefix, network, args.dark)
+	if args.outformat.lower() == 'html':
+		write_html(args.prefix, network, args.ar, args.dark, args.nodesize, args.radius)
+		write_ply(args.prefix, network, args.dark)
+	elif args.outformat.lower() == 'datadivr':
+		write_datadivr(args.prefix, network)
